@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track shared room expenses with Google Sheets sync">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ExpenseTracker">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23667eea' width='192' height='192'/><text x='50%' y='50%' font-size='80' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>₹</text></svg>">
+    <title>Room Expense Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Room Expense Tracker</h1>
+        <div id="status" class="status-banner">Loading status...</div>
+
+        <form id="expenseForm">
+            <input
+                type="text"
+                id="title"
+                placeholder="Expense Name"
+                required>
+
+            <input
+                type="number"
+                id="amount"
+                placeholder="Amount"
+                min="0"
+                step="0.01"
+                required>
+
+            <select id="paidBy">
+                <option>Sokin</option>
+                <option>Sachin</option>
+                <option>Arshad</option>
+            </select>
+
+            <button type="submit">Add Expense</button>
+        </form>
+
+        <hr>
+
+        <h2>Total Expense: ₹<span id="total">0</span></h2>
+        <div id="summary" class="summary"></div>
+
+        <ul id="expenseList"></ul>
+
+        <div class="action-buttons">
+            <button id="sheetsBtn" class="sheets-btn">📊 Open in Google Sheets</button>
+            <button id="clearAllBtn" class="clear-all-btn">🗑️ Clear All Expenses</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("service-worker.js").then(reg => {
+                console.log("Service Worker registered successfully");
+            }).catch(error => {
+                console.log("Service Worker registration failed:", error);
+            });
+        }
+    </script>
+</body>
+
+</html>
