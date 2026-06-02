@@ -11,7 +11,7 @@ const clearAllBtn = document.getElementById("clearAllBtn");
 const sheetsBtn = document.getElementById("sheetsBtn");
 const statusElement = document.getElementById("status");
 const summaryElement = document.getElementById("summary");
-const participants = ["Sokin", "Sachin", "Arshad"];
+const participants = ["Tohid", "Ayush", "Arshad"];
 
 // Simple client-side access control (offline-friendly)
 // NOTE: This is a lightweight gate for convenience. It is not a secure auth method.
