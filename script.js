@@ -13,6 +13,43 @@ const statusElement = document.getElementById("status");
 const summaryElement = document.getElementById("summary");
 const participants = ["Sokin", "Sachin", "Arshad"];
 
+// Simple client-side access control (offline-friendly)
+// NOTE: This is a lightweight gate for convenience. It is not a secure auth method.
+const ACCESS_PIN = "1234"; // change this to a secret you share with the 3 people
+let currentUser = sessionStorage.getItem("expenseTrackerUser") || null;
+let readOnlyMode = false;
+
+function signInPrompt() {
+    const names = participants.join(", ");
+    const name = prompt(`Enter your name (one of: ${names}) to sign in, or Cancel for read-only:`);
+    if (!name) {
+        readOnlyMode = true;
+        setStatus("Read-only: sign in to enable adding/syncing.", "status-warning");
+        return false;
+    }
+
+    if (!participants.includes(name)) {
+        alert("Name not recognised. Only the three permitted users may sign in.");
+        return signInPrompt();
+    }
+
+    const pin = prompt("Enter access PIN:");
+    if (pin === ACCESS_PIN) {
+        currentUser = name;
+        sessionStorage.setItem("expenseTrackerUser", currentUser);
+        readOnlyMode = false;
+        setStatus(`Signed in as ${currentUser}.`, "status-ok");
+        return true;
+    }
+
+    alert("Incorrect PIN. Try again.");
+    return signInPrompt();
+}
+
+function ensureAuthenticated() {
+    if (currentUser) return true;
+    return signInPrompt();
+}
 let expenses = [];
 let statusOverride = null;
 
@@ -209,6 +246,8 @@ function renderSummary() {
 
 form.addEventListener("submit", function(e) {
     e.preventDefault();
+    if (!ensureAuthenticated()) return;
+    if (readOnlyMode) { alert("You are in read-only mode. Sign in to add expenses."); return; }
 
     const title = document.getElementById("title").value.trim();
     const amount = Number(document.getElementById("amount").value);
@@ -235,6 +274,9 @@ form.addEventListener("submit", function(e) {
 });
 
 clearAllBtn.addEventListener("click", function() {
+    if (!ensureAuthenticated()) return;
+    if (readOnlyMode) { alert("You are in read-only mode. Sign in to clear expenses."); return; }
+
     if (expenses.length === 0) {
         alert("There are no expenses to clear.");
         return;
@@ -256,6 +298,9 @@ clearAllBtn.addEventListener("click", function() {
 });
 
 sheetsBtn.addEventListener("click", function() {
+    if (!ensureAuthenticated()) return;
+    if (readOnlyMode) { alert("You are in read-only mode. Sign in to open the sheet."); return; }
+
     if (isSheetUrlConfigured()) {
         window.open(SHEET_URL, "_blank");
         return;
