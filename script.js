@@ -18,6 +18,33 @@ const participants = ["Sokin", "Sachin", "Arshad"];
 const ACCESS_PIN = "1234"; // change this to a secret you share with the 3 people
 let currentUser = sessionStorage.getItem("expenseTrackerUser") || null;
 let readOnlyMode = false;
+const INACTIVITY_TIMEOUT_MS = 2 * 60 * 1000;
+let inactivityTimer = null;
+
+function signOut() {
+    currentUser = null;
+    readOnlyMode = false;
+    sessionStorage.removeItem("expenseTrackerUser");
+    setStatus("Signed out after 2 minutes of inactivity.", "status-warning");
+}
+
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    if (!currentUser) {
+        inactivityTimer = null;
+        return;
+    }
+
+    inactivityTimer = setTimeout(() => {
+        signOut();
+    }, INACTIVITY_TIMEOUT_MS);
+}
+
+function handleUserActivity() {
+    if (currentUser) {
+        resetInactivityTimer();
+    }
+}
 
 function signInPrompt() {
     const names = participants.join(", ");
@@ -39,6 +66,7 @@ function signInPrompt() {
         sessionStorage.setItem("expenseTrackerUser", currentUser);
         readOnlyMode = false;
         setStatus(`Signed in as ${currentUser}.`, "status-ok");
+        resetInactivityTimer();
         return true;
     }
 
@@ -47,7 +75,10 @@ function signInPrompt() {
 }
 
 function ensureAuthenticated() {
-    if (currentUser) return true;
+    if (currentUser) {
+        resetInactivityTimer();
+        return true;
+    }
     return signInPrompt();
 }
 let expenses = [];
@@ -348,6 +379,16 @@ function renderExpenses() {
 }
 
 loadFromGoogleSheets();
+
+if (currentUser) {
+    setStatus(`Signed in as ${currentUser}.`, "status-ok");
+    resetInactivityTimer();
+}
+
+// Track activity to auto sign out after 2 minutes of inactivity
+["mousemove", "keydown", "mousedown", "touchstart"].forEach(eventType => {
+    window.addEventListener(eventType, handleUserActivity);
+});
 
 // Auto-sync when coming back online
 window.addEventListener("online", function() {
